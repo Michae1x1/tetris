@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Tetris</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- start ccreen -->
+    <div id="start-screen" class="screen">
+        <h1>TETRIS</h1>
+        <div class="high-scores">
+            <h2>High Scores</h2>
+            <div id="high-scores-list"></div>
+        </div>
+        <button id="start-button" class="neon-button">START GAME</button>
+    </div>
+
+    <!-- main Game -->
+    <div id="game-wrapper" class="game-wrapper" style="display: none;">
+        <h1>TETRIS</h1>
+        
+        <!-- stats -->
+        <div class="stats-bar">
+            <div>Level: <span id="level">1</span></div>
+            <div>Score: <span id="score">0</span></div>
+            <div>High Score: <span id="high-score">0</span></div>
+        </div>
+
+        <div id="game-container">
+            <div class="hold-piece-container">
+                <h3>Hold (ALT)</h3>
+                <canvas id="hold-piece" width="120" height="120"></canvas>
+            </div>
+
+            <canvas id="tetris" width="300" height="600"></canvas>
+
+            <div id="score-container">
+                <h3>Next:</h3>
+                <canvas id="next-piece" width="120" height="120"></canvas>
+            </div>
+        </div>
+
+        <div id="game-over" class="game-over">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button onclick="resetGame()">PLAY AGAIN</button>
+            <button onclick="showStartScreen()">MAIN MENU</button>
+        </div>
+
+        <!-- keyboard controls -->
+        <div id="controls">
+            <div class="controls-info">
+                <div class="controls-title">CONTROLS:</div>
+                <div class="controls-grid">
+                    <div class="controls-row">
+                        <div class="key-group">
+                            <span class="key">←</span>
+                            <span class="key">→</span>
+                        </div>
+                        <span class="control-label">Move left/right</span>
+                    </div>
+                    <div class="controls-row">
+                        <span class="key">↑</span>
+                        <span class="control-label">Rotate</span>
+                    </div>
+                    <div class="controls-row">
+                        <span class="key">↓</span>
+                        <span class="control-label">Soft drop</span>
+                    </div>
+                    <div class="controls-row">
+                        <span class="key">Space</span>
+                        <span class="control-label">Hard drop</span>
+                    </div>
+                    <div class="controls-row">
+                        <span class="key">Alt</span>
+                        <span class="control-label">Hold piece</span>
+                    </div>
+                    <div class="controls-row">
+                        <span class="key">P</span>
+                        <span class="control-label">Pause game</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+
+    <script src="script.js"></script>
+</body>
+</html>
