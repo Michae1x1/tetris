@@ -2,6 +2,8 @@
 
 A modern implementation of the classic Tetris game with a neon aesthetic and enhanced features. Built using vanilla JavaScript, HTML5 Canvas, and CSS3.
 
+### Play @ https://michae1x1.github.io/tetris/
+
 ## Features
 
 - 🎮 Classic Tetris gameplay mechanics
