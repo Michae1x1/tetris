@@ -6,16 +6,9 @@ A modern implementation of the classic Tetris game with a neon aesthetic and enh
 
 ## Features
 
-- 🎮 Classic Tetris gameplay mechanics
-- 💫 Neon visual design with glowing effects
-- 🏆 High score system with local storage
-- 🎯 Next piece preview
-- 💼 Piece holding functionality
-- 👻 Ghost piece preview
-- ⏸️ Pause/Resume functionality
-- 🎚️ Progressive difficulty with increasing levels
-- 🎯 Score multiplier system
-  
+-  Classic Tetris gameplay mechanics
+-  Neon visual design with glowing effects
+ 
 
 ## Game Controls
 
@@ -50,28 +43,6 @@ A modern implementation of the classic Tetris game with a neon aesthetic and enh
 - `style.css`: Neon styling and responsive design
 - `script.js`: Game logic and mechanics
 
-### Key Features Implementation
-
-1. **Piece Movement & Rotation**
-   - Collision detection system
-   - Wall kick implementation
-   - SRS (Super Rotation System) based rotation
-
-2. **Scoring & Levels**
-   - Progressive difficulty
-   - Score multiplier system
-   - Level-based speed adjustment
-
-3. **Visual Effects**
-   - Neon glow effects using CSS
-   - Ghost piece preview
-   - Next piece preview
-   - Hold piece display
-
-4. **Game State Management**
-   - Pause/Resume functionality
-   - Game over detection
-   - High score tracking
 
 ## Browser Compatibility
 
@@ -84,16 +55,13 @@ A modern implementation of the classic Tetris game with a neon aesthetic and enh
 
 ## Contributing
 
-Feel free to contribute to this project!
+Feel free to contribute to this project.
 
-## License
-
-This project is released under the MIT License.
 
 ## Known Issues
 
 - Some browsers might have varying performance
-- Alt key might conflict with browser shortcuts
+- Alt-key might conflict with browser shortcuts
 
 ## Future Enhancements
 
