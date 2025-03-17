@@ -39,11 +39,13 @@ let dropInterval = 1000;
 let lastTime = 0;
 let board = createBoard();
 let currentPiece = null;
-let nextPiece = null;
+let nextPieces = []; 
 let heldPiece = null;
 let canHold = true;
 let highScore = parseInt(localStorage.getItem('tetrisHighScore')) || 0;
 let highScores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
+
+highScoreElement.textContent = highScore;
 
 // tetris Pieces
 const PIECES = [
@@ -170,8 +172,7 @@ function drawMatrix(matrix, offset, context) {
                 const color = COLORS[value];
                 const xPos = (x + offset.x) * BLOCK_SIZE;
                 const yPos = (y + offset.y) * BLOCK_SIZE;
-                
-                // first draw a black border for separation
+
                 context.strokeStyle = '#000000';
                 context.lineWidth = 3;
                 context.strokeRect(
@@ -180,8 +181,7 @@ function drawMatrix(matrix, offset, context) {
                     BLOCK_SIZE,
                     BLOCK_SIZE
                 );
-                
-                // draw slightly smaller neon border inside
+
                 context.shadowBlur = 8;
                 context.shadowColor = color;
                 context.strokeStyle = color;
@@ -193,7 +193,6 @@ function drawMatrix(matrix, offset, context) {
                     BLOCK_SIZE - 4
                 );
                 
-                // add white inner highlight for definition
                 context.shadowBlur = 0;
                 context.strokeStyle = '#ffffff';
                 context.lineWidth = 1;
@@ -204,7 +203,6 @@ function drawMatrix(matrix, offset, context) {
                     BLOCK_SIZE - 8
                 );
                 
-                // reset shadow
                 context.shadowBlur = 0;
             }
         });
@@ -238,22 +236,58 @@ function drawGhostPiece(matrix, offset) {
     });
 }
 
-function drawNextPiece() {
+function drawNextPieces() {
     nextPieceCtx.fillStyle = '#000';
     nextPieceCtx.fillRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
     
-    if (nextPiece) {
-        // calculate the bounding box of the piece
-        const width = nextPiece.matrix[0].length * BLOCK_SIZE;
-        const height = nextPiece.matrix.length * BLOCK_SIZE;
+    if (nextPieces.length > 0) {
+        const previewBlockSize = 18;
         
-        // calculate center position
-        const offset = {
-            x: Math.floor((nextPieceCanvas.width - width) / (2 * BLOCK_SIZE)),
-            y: Math.floor((nextPieceCanvas.height - height) / (2 * BLOCK_SIZE))
-        };
+        const positions = [
+            { y: 30 },  
+            { y: 110 }, 
+            { y: 190 }, 
+            { y: 270 }  
+        ];
         
-        drawMatrix(nextPiece.matrix, offset, nextPieceCtx);
+
+        for (let i = 0; i < Math.min(4, nextPieces.length); i++) {
+            const piece = nextPieces[i];
+            const position = positions[i];
+            
+            const width = piece.matrix[0].length * previewBlockSize;
+            const height = piece.matrix.length * previewBlockSize;
+            
+            const xOffset = (nextPieceCanvas.width - width) / 2;
+            const yOffset = position.y;
+            
+            piece.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        const color = COLORS[value];
+                        const xPos = xOffset + x * previewBlockSize;
+                        const yPos = yOffset + y * previewBlockSize;
+                        
+                        nextPieceCtx.strokeStyle = '#000000';
+                        nextPieceCtx.lineWidth = 1.5;
+                        nextPieceCtx.strokeRect(xPos, yPos, previewBlockSize, previewBlockSize);
+                        
+                        nextPieceCtx.shadowBlur = 3;
+                        nextPieceCtx.shadowColor = color;
+                        nextPieceCtx.strokeStyle = color;
+                        nextPieceCtx.lineWidth = 1;
+                        nextPieceCtx.strokeRect(xPos + 1, yPos + 1, previewBlockSize - 2, previewBlockSize - 2);
+                        
+                        nextPieceCtx.shadowBlur = 0;
+                        nextPieceCtx.strokeStyle = '#ffffff';
+                        nextPieceCtx.lineWidth = 0.5;
+                        nextPieceCtx.strokeRect(xPos + 2, yPos + 2, previewBlockSize - 4, previewBlockSize - 4);
+                        
+                        nextPieceCtx.shadowBlur = 0;
+                    }
+                });
+            });
+        }
     }
 }
 
@@ -262,15 +296,45 @@ function drawHeldPiece() {
     holdPieceCtx.fillRect(0, 0, holdPieceCanvas.width, holdPieceCanvas.height);
     
     if (heldPiece) {
-        const width = heldPiece[0].length * BLOCK_SIZE;
-        const height = heldPiece.length * BLOCK_SIZE;
+        // use a smaller block size for held piece preview
+        const previewBlockSize = 20;
         
-        const offset = {
-            x: Math.floor((holdPieceCanvas.width - width) / (2 * BLOCK_SIZE)),
-            y: Math.floor((holdPieceCanvas.height - height) / (2 * BLOCK_SIZE))
-        };
+        // calculate the bounding box of the piece
+        const width = heldPiece[0].length * previewBlockSize;
+        const height = heldPiece.length * previewBlockSize;
         
-        drawMatrix(heldPiece, offset, holdPieceCtx);
+        // calculate center position
+        const xOffset = (holdPieceCanvas.width - width) / 2;
+        const yOffset = (holdPieceCanvas.height - height) / 2;
+        
+        // Draw the piece manually with the smaller size
+        heldPiece.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    const color = COLORS[value];
+                    const xPos = xOffset + x * previewBlockSize;
+                    const yPos = yOffset + y * previewBlockSize;
+                    
+                    // Draw block with the same style but smaller size
+                    holdPieceCtx.strokeStyle = '#000000';
+                    holdPieceCtx.lineWidth = 2;
+                    holdPieceCtx.strokeRect(xPos, yPos, previewBlockSize, previewBlockSize);
+                    
+                    holdPieceCtx.shadowBlur = 5;
+                    holdPieceCtx.shadowColor = color;
+                    holdPieceCtx.strokeStyle = color;
+                    holdPieceCtx.lineWidth = 1.5;
+                    holdPieceCtx.strokeRect(xPos + 1, yPos + 1, previewBlockSize - 2, previewBlockSize - 2);
+                    
+                    holdPieceCtx.shadowBlur = 0;
+                    holdPieceCtx.strokeStyle = '#ffffff';
+                    holdPieceCtx.lineWidth = 0.5;
+                    holdPieceCtx.strokeRect(xPos + 3, yPos + 3, previewBlockSize - 6, previewBlockSize - 6);
+                    
+                    holdPieceCtx.shadowBlur = 0;
+                }
+            });
+        });
     }
 }
 
@@ -358,14 +422,44 @@ function clearLines() {
 function holdPiece() {
     if (!canHold || gameOver || paused) return;
     
+    // get current piece type (index in PIECES array)
+    let currentPieceType = 0;
+    for (let i = 0; i < PIECES.length; i++) {
+        // check if any value in current piece matches this piece type
+        for (let y = 0; y < currentPiece.matrix.length; y++) {
+            for (let x = 0; x < currentPiece.matrix[y].length; x++) {
+                if (currentPiece.matrix[y][x] === i + 1) {
+                    currentPieceType = i;
+                    break;
+                }
+            }
+        }
+    }
     
     if (heldPiece === null) {
-        heldPiece = currentPiece.matrix;
+        // store standard orientation of the piece
+        heldPiece = JSON.parse(JSON.stringify(PIECES[currentPieceType]));
         resetPiece();
     } else {
-        const temp = currentPiece.matrix;
-        currentPiece.matrix = heldPiece;
-        heldPiece = temp;
+        // find the type of held piece
+        let heldPieceType = 0;
+        for (let i = 0; i < PIECES.length; i++) {
+            for (let y = 0; y < heldPiece.length; y++) {
+                for (let x = 0; x < heldPiece[y].length; x++) {
+                    if (heldPiece[y][x] === i + 1) {
+                        heldPieceType = i;
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // swap with standard orientation
+        const tempPieceType = currentPieceType;
+        currentPiece.matrix = JSON.parse(JSON.stringify(PIECES[heldPieceType]));
+        heldPiece = JSON.parse(JSON.stringify(PIECES[tempPieceType]));
+        
+        // reposition current piece
         currentPiece.pos.x = Math.floor(BOARD_WIDTH / 2) - Math.floor(currentPiece.matrix[0].length / 2);
         currentPiece.pos.y = 0;
     }
@@ -420,9 +514,15 @@ function hardDrop() {
 
 // game state Management
 function resetPiece() {
-    currentPiece = nextPiece || createPiece();
-    nextPiece = createPiece();
-    drawNextPiece();
+    while (nextPieces.length < 4) {
+        nextPieces.push(createPiece());
+    }
+
+    currentPiece = nextPieces.shift() || createPiece();
+
+    nextPieces.push(createPiece());
+
+    drawNextPieces();
     canHold = true;
     
     if (collision(board, currentPiece)) {
@@ -455,57 +555,49 @@ function resetGame() {
     // reset pieces
     heldPiece = null;
     canHold = true;
-    nextPiece = createPiece();
+    
+    // reset piece queue with 4 new pieces
+    nextPieces = Array(4).fill().map(() => createPiece());
+    
+    // initialize the current piece
     resetPiece();
     
     // force an initial draw of all elements
     drawBoard();
-    drawNextPiece();
+    drawNextPieces();
     drawHeldPiece();
     
     // ensure that the game loop is running
     requestAnimationFrame(update);
 }
 
-heldPiece = null;
-    canHold = true;
-    nextPiece = createPiece();
-    resetPiece();
-    
-    drawBoard();
-    drawNextPiece();
-    drawHeldPiece();
-    
-    requestAnimationFrame(update);
-
-
-    function pauseGame() {
-        paused = !paused;
-        if (!paused) {
-            lastTime = 0;
-            requestAnimationFrame(update);
-        } else {
-            // draw pause message
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // set up text style for "RESUME"
-            ctx.font = 'bold 24px "Courier New"';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            
-            // add glow effect
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = '#00ff00';
-            ctx.fillStyle = '#00ff00';
-            
-            // draw text
-            ctx.fillText('RESUME', canvas.width / 2, canvas.height / 2);
-            
-            // reset shadow effect
-            ctx.shadowBlur = 0;
-        }
+function pauseGame() {
+    paused = !paused;
+    if (!paused) {
+        lastTime = 0;
+        requestAnimationFrame(update);
+    } else {
+        // draw pause message
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // set up text style for "RESUME"
+        ctx.font = 'bold 24px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // add glow effect
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#00ff00';
+        ctx.fillStyle = '#00ff00';
+        
+        // draw text
+        ctx.fillText('RESUME', canvas.width / 2, canvas.height / 2);
+        
+        // reset shadow effect
+        ctx.shadowBlur = 0;
     }
+}
 
 function showStartScreen() {
     document.getElementById('start-screen').style.display = 'flex';
@@ -572,5 +664,6 @@ document.addEventListener('keydown', event => {
 
 // initialize game
 document.getElementById('start-button').addEventListener('click', startGame);
+highScoreElement.textContent = highScore;
 displayHighScores();
 showStartScreen();
