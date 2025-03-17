@@ -4,12 +4,6 @@ A modern implementation of the classic Tetris game with a neon aesthetic and enh
 
 ### Play @ https://michae1x1.github.io/tetris/
 
-## Features
-
--  Classic Tetris gameplay mechanics
--  Neon visual design with glowing effects
- 
-
 ## Game Controls
 
 - **←/→ Arrow Keys**: Move piece left/right
