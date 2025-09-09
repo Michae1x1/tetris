@@ -14,45 +14,16 @@
             <h2>High Scores</h2>
             <div id="high-scores-list"></div>
         </div>
+        
+        <button id="controls-toggle" class="neon-button">CONTROLS</button>
         <button id="start-button" class="neon-button">START GAME</button>
     </div>
 
-    <!-- main Game -->
-    <div id="game-wrapper" class="game-wrapper" style="display: none;">
-        <h1>TETRIS</h1>
-        
-        <!-- stats -->
-        <div class="stats-bar">
-            <div>Level: <span id="level">1</span></div>
-            <div>Score: <span id="score">0</span></div>
-            <div>High Score: <span id="high-score">0</span></div>
-        </div>
-
-        <div id="game-container">
-            <div class="hold-piece-container">
-                <h3>Hold (ALT)</h3>
-                <canvas id="hold-piece" width="120" height="120"></canvas>
-            </div>
-
-            <canvas id="tetris" width="300" height="600"></canvas>
-
-            <div id="score-container">
-                <h3>Next:</h3>
-                <canvas id="next-piece" width="120" height="320"></canvas>
-            </div>
-        </div>
-
-        <div id="game-over" class="game-over">
-            <h2>GAME OVER</h2>
-            <p>Final Score: <span id="final-score">0</span></p>
-            <button onclick="resetGame()">PLAY AGAIN</button>
-            <button onclick="showStartScreen()">MAIN MENU</button>
-        </div>
-
-        <!-- keyboard controls -->
+    <!-- controls screen -->
+    <div id="controls-screen" class="screen" style="display: none;">
+        <h1>CONTROLS</h1>
         <div id="controls">
             <div class="controls-info">
-                <div class="controls-title">CONTROLS:</div>
                 <div class="controls-grid">
                     <div class="controls-row">
                         <div class="key-group">
@@ -74,7 +45,7 @@
                         <span class="control-label">Hard drop</span>
                     </div>
                     <div class="controls-row">
-                        <span class="key">Alt</span>
+                        <span class="key">Q</span>
                         <span class="control-label">Hold piece</span>
                     </div>
                     <div class="controls-row">
@@ -83,6 +54,65 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <button id="back-to-menu" class="neon-button">BACK</button>
+    </div>
+
+    <!-- main Game -->
+    <div id="game-wrapper" class="game-wrapper" style="display: none;">
+        <h1>TETRIS</h1>
+        
+        <div id="game-container">
+            <div class="left-panel">
+                <div class="hold-piece-container">
+                    <h3>Hold</h3>
+                    <canvas id="hold-piece" width="120" height="120"></canvas>
+                </div>
+                
+                <div class="game-stats">
+                    <div class="stat-group">
+                        <div class="stat-label">Score</div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="game-score">0000000</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <div class="stat-label">Level</div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="game-level">0000001</div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-group">
+                        <div class="stat-label">Lines</div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="game-lines">0000000</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <canvas id="tetris" width="300" height="600"></canvas>
+
+            <div class="right-panel">
+                <div id="score-container">
+                    <h3>Next</h3>
+                    <canvas id="next-piece" width="120" height="320"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-over" class="game-over">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button onclick="resetGame()">PLAY AGAIN</button>
+            <button onclick="showStartScreen()">MAIN MENU</button>
+        </div>
+
+        <div class="game-buttons">
+            <button id="main-menu-button" class="neon-button" onclick="showStartScreen(); this.blur();" tabindex="-1">MAIN MENU</button>
+            <button id="restart-button" class="neon-button" onclick="resetGame(); this.blur();" tabindex="-1">RESTART</button>
         </div>
     </div>
 
