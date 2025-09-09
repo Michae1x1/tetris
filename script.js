@@ -5,11 +5,11 @@ const nextPieceCanvas = document.getElementById('next-piece');
 const nextPieceCtx = nextPieceCanvas.getContext('2d');
 const holdPieceCanvas = document.getElementById('hold-piece');
 const holdPieceCtx = holdPieceCanvas.getContext('2d');
-const scoreElement = document.getElementById('score');
-const levelElement = document.getElementById('level');
+const gameScoreElement = document.getElementById('game-score');
+const gameLevelElement = document.getElementById('game-level');
+const gameLinesElement = document.getElementById('game-lines');
 const gameOverElement = document.getElementById('game-over');
 const finalScoreElement = document.getElementById('final-score');
-const highScoreElement = document.getElementById('high-score');
 
 
 // game constants
@@ -44,8 +44,105 @@ let heldPiece = null;
 let canHold = true;
 let highScore = parseInt(localStorage.getItem('tetrisHighScore')) || 0;
 let highScores = JSON.parse(localStorage.getItem('tetrisHighScores')) || [];
+let animationId = null;
 
-highScoreElement.textContent = highScore;
+// Animation variables for counting numbers
+let animatingStats = {
+    score: { current: 0, target: 0, isAnimating: false },
+    level: { current: 1, target: 1, isAnimating: false },
+    lines: { current: 0, target: 0, isAnimating: false }
+};
+
+// Function to format numbers with different colors for zeros vs actual digits
+function formatStatNumber(value, totalDigits = 7) {
+    const valueStr = Math.floor(value).toString();
+    const paddedStr = valueStr.padStart(totalDigits, '0');
+    const leadingZeros = totalDigits - valueStr.length;
+    
+    let formattedHTML = '';
+    
+    // Add leading zeros in light color
+    for (let i = 0; i < leadingZeros; i++) {
+        formattedHTML += '<span class="zero-digit">0</span>';
+    }
+    
+    // Add actual number in bright neon color
+    for (let i = 0; i < valueStr.length; i++) {
+        formattedHTML += '<span class="neon-digit">' + valueStr[i] + '</span>';
+    }
+    
+    return formattedHTML;
+}
+
+// Function to animate numbers counting up
+function animateStatTo(statType, targetValue) {
+    const stat = animatingStats[statType];
+    stat.target = targetValue;
+    
+    if (stat.isAnimating) return; // already animating
+    
+    stat.isAnimating = true;
+    
+    const startValue = stat.current;
+    const difference = targetValue - startValue;
+    const duration = 800; // animation duration in milliseconds
+    const startTime = performance.now();
+    
+    function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // easing function for smooth animation
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        
+        stat.current = startValue + (difference * easeProgress);
+        
+        // update the display
+        const element = document.getElementById(`game-${statType}`);
+        if (element) {
+            element.innerHTML = formatStatNumber(stat.current);
+        }
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        } else {
+            stat.current = targetValue;
+            stat.isAnimating = false;
+            if (element) {
+                element.innerHTML = formatStatNumber(targetValue);
+            }
+        }
+    }
+    
+    requestAnimationFrame(animate);
+}
+
+// function to trigger screen rumble effect based on lines cleared
+function triggerRumble(linesCleared) {
+    const gameWrapper = document.getElementById('game-wrapper');
+    const rumbleClass = `rumble-${linesCleared}`;
+    
+    gameWrapper.classList.add(rumbleClass);
+    
+    // Remove the class after animation completes (different durations)
+    const durations = { 1: 300, 2: 350, 3: 400, 4: 500 };
+    setTimeout(() => {
+        gameWrapper.classList.remove(rumbleClass);
+    }, durations[linesCleared] || 500);
+}
+
+
+// controls screen functionality
+document.getElementById('controls-toggle').addEventListener('click', function() {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('controls-screen').style.display = 'flex';
+});
+
+document.getElementById('back-to-menu').addEventListener('click', function() {
+    document.getElementById('controls-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
+});
+
 
 // tetris Pieces
 const PIECES = [
@@ -93,15 +190,14 @@ function updateHighScores(finalScore) {
     if (finalScore > highScore) {
         highScore = finalScore;
         localStorage.setItem('tetrisHighScore', highScore);
-        highScoreElement.textContent = highScore;
-    }
+            }
 
     highScores.push({
         score: finalScore,
         date: new Date().toLocaleDateString()
     });
     highScores.sort((a, b) => b.score - a.score);
-    highScores.splice(5); // keep only top 5 scores
+    highScores.splice(10); // keep only top 10 scores
     localStorage.setItem('tetrisHighScores', JSON.stringify(highScores));
     displayHighScores();
 }
@@ -115,7 +211,7 @@ function displayHighScores() {
         .join('');
 }
 
-// Game Board Functions
+// game board functions
 function createBoard() {
     return Array.from(Array(BOARD_HEIGHT), () => Array(BOARD_WIDTH).fill(0));
 }
@@ -128,7 +224,7 @@ function createPiece() {
     };
 }
 
-// Drawing Functions
+// drawing functions
 function drawBoard() {
     // clear the canvas
     ctx.fillStyle = '#000';
@@ -307,7 +403,7 @@ function drawHeldPiece() {
         const xOffset = (holdPieceCanvas.width - width) / 2;
         const yOffset = (holdPieceCanvas.height - height) / 2;
         
-        // Draw the piece manually with the smaller size
+        // draw the piece manually with the smaller size
         heldPiece.forEach((row, y) => {
             row.forEach((value, x) => {
                 if (value !== 0) {
@@ -315,7 +411,7 @@ function drawHeldPiece() {
                     const xPos = xOffset + x * previewBlockSize;
                     const yPos = yOffset + y * previewBlockSize;
                     
-                    // Draw block with the same style but smaller size
+                    // draw block with the same style but smaller size
                     holdPieceCtx.strokeStyle = '#000000';
                     holdPieceCtx.lineWidth = 2;
                     holdPieceCtx.strokeRect(xPos, yPos, previewBlockSize, previewBlockSize);
@@ -385,7 +481,7 @@ function collision(board, piece) {
     return false;
 }
 
-// Game Mechanics
+// game mechanics
 function clearLines() {
     let linesCleared = 0;
     outer: for (let y = board.length - 1; y >= 0; y--) {
@@ -410,12 +506,21 @@ function clearLines() {
         const newLevel = Math.floor(lines / 10) + 1;
         if (newLevel > level) {
             level = newLevel;
-            levelElement.textContent = level;
+            animateStatTo('level', level);
             // increase speed with level
             dropInterval = Math.max(100, 1000 - (level - 1) * 100);
         }
         
-        scoreElement.textContent = score;
+        
+        // trigger rumble effect when lines are cleared
+        if (linesCleared > 0) {
+            triggerRumble(linesCleared);
+        }
+        
+        // update game stat displays with animation
+        animateStatTo('score', score);
+        animateStatTo('level', level);
+        animateStatTo('lines', lines);
     }
 }
 
@@ -509,6 +614,14 @@ function hardDrop() {
         currentPiece.pos.y++;
     }
     currentPiece.pos.y--;
+    
+    // add tiny shake effect for hard drop
+    const gameWrapper = document.getElementById('game-wrapper');
+    gameWrapper.classList.add('hard-drop-impact');
+    setTimeout(() => {
+        gameWrapper.classList.remove('hard-drop-impact');
+    }, 100);
+    
     playerDrop();
 }
 
@@ -541,8 +654,19 @@ function resetGame() {
     lines = 0;
     
     // reset UI elements
-    scoreElement.textContent = score;
-    levelElement.textContent = level;
+    
+    // reset animation values and update displays immediately
+    animatingStats.score.current = score;
+    animatingStats.score.target = score;
+    animatingStats.level.current = level;
+    animatingStats.level.target = level;
+    animatingStats.lines.current = lines;
+    animatingStats.lines.target = lines;
+    
+    // update game stat displays immediately (no animation on reset)
+    gameScoreElement.innerHTML = formatStatNumber(score);
+    gameLevelElement.innerHTML = formatStatNumber(level);
+    gameLinesElement.innerHTML = formatStatNumber(lines);
     gameOver = false;
     paused = false;
     gameOverElement.style.display = 'none';
@@ -567,16 +691,26 @@ function resetGame() {
     drawNextPieces();
     drawHeldPiece();
     
-    // ensure that the game loop is running
-    requestAnimationFrame(update);
+    // cancel any existing animation loop and start new one
+    if (animationId) {
+        cancelAnimationFrame(animationId);
+    }
+    animationId = requestAnimationFrame(update);
 }
 
 function pauseGame() {
     paused = !paused;
     if (!paused) {
         lastTime = 0;
-        requestAnimationFrame(update);
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+        }
+        animationId = requestAnimationFrame(update);
     } else {
+        if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+        }
         // draw pause message
         ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -625,7 +759,7 @@ function update(time = 0) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBoard();
     
-    requestAnimationFrame(update);
+    animationId = requestAnimationFrame(update);
 }
 
 // event Listeners
@@ -648,10 +782,8 @@ document.addEventListener('keydown', event => {
         case ' ':
             if (!paused) hardDrop();
             break;
-        case 'Alt':
-        case 'AltLeft':
-        case 'AltRight':
-            event.preventDefault();
+        case 'q':
+        case 'Q':
             if (!paused) holdPiece();
             break;
         case 'p':
@@ -664,6 +796,5 @@ document.addEventListener('keydown', event => {
 
 // initialize game
 document.getElementById('start-button').addEventListener('click', startGame);
-highScoreElement.textContent = highScore;
 displayHighScores();
 showStartScreen();
