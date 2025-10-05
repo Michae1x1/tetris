@@ -14,7 +14,7 @@ A classic Tetris game with a simple neon aesthetic. Built with vanilla HTML5, CS
 - **↑ Arrow Key**: Rotate piece
 - **↓ Arrow Key**: Soft drop
 - **Space Bar**: Hard drop
-- **Alt Key**: Hold piece
+- **Q Key**: Hold piece
 - **P Key**: Pause/Resume game
 
 ## Scoring System (classic)
